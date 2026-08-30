@@ -2,9 +2,8 @@ import re
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
-
-
-
+from data import sqllite
+from data.sqllite import insert
 
 
 def parsing():
@@ -39,6 +38,7 @@ def find_the_least_expensive(prices_html):
                 return None
         d_sorted = sorted(d.items(), key=lambda item: item[1])
         best_store, best_price = d_sorted[0]
+        insert(best_store, )
         print(f"The best store for buying eggs is: {best_store}, with the price being {best_price}")
         try:
             return d_sorted[0]
