@@ -1,12 +1,17 @@
 import sqlite3
 import pandas as pd
+from pathlib import Path
+
+#the database file tends to appear in scraper folder
+data_folder = Path(__file__).parent.absolute()
+db_path = data_folder / 'groceries.db'
 
 #connection
-connection = sqlite3.connect('groceries.db')
+connection = sqlite3.connect(db_path)
 
 #creating a table
 sql_create_table = """
-CREATE TABLE groceries(
+CREATE TABLE IF NOT EXISTS groceries(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     grocery TEXT NOT NULL,
     store TEXT,
@@ -26,7 +31,7 @@ except Exception as e:
 def insert(grocery, store, category, price, url, in_stock):
     sql_insert = """
     INSERT INTO groceries (grocery, store, category, price, url, in_stock) 
-    VALUES (?,?,?,?,?)
+    VALUES (?,?,?,?,?,?)
     ON CONFLICT(url) DO UPDATE SET
         price = excluded.price,
         in_stock = excluded.in_stock;
