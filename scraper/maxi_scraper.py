@@ -51,9 +51,10 @@ def find_the_prices(html_content):
     prices_html = soup.find_all('div', class_=re.compile(r'priceCol'))
     if not prices_html:
         prices_html = [soup]
+    units = []
     for col in prices_html:
         row = col.find_all('div', class_=re.compile(r'row'))
-        units = []
+
         for prices in row:
             store = prices.find('img', class_=re.compile(r'logo'))
             store_name = store['alt'] if store else 'unknown'
@@ -67,11 +68,11 @@ def find_the_prices(html_content):
                     units.append((store_name, price, name, category))
                 else:
                     print(f"No price for {store_name}")
-        if not units:
+    if not units:
             print("Price finding failed")
             return None
-        return units
-    return None
+    return units
+
 
 if "__main__" == __name__:
     url = 'https://cenoteka.rs/p/maslinovo-ulje-olitalia-extra-virgine-1l/'

@@ -13,8 +13,9 @@ CREATE TABLE IF NOT EXISTS groceries(
     store TEXT,
     category TEXT,
     price REAL,
-    url TEXT UNIQUE,
-    in_stock BOOLEAN
+    url TEXT,
+    in_stock BOOLEAN,
+    UNIQUE(url, store)
 )
 """
 with sqlite3.connect(db_path) as connection:
@@ -26,7 +27,7 @@ def insert(grocery, store, category, price, url, in_stock):
     sql_insert = """
     INSERT INTO groceries (grocery, store, category, price, url, in_stock) 
     VALUES (?,?,?,?,?,?)
-    ON CONFLICT(url) DO UPDATE SET
+    ON CONFLICT(url, store) DO UPDATE SET
         price = excluded.price,
         in_stock = excluded.in_stock;
     """
