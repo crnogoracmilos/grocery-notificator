@@ -1,13 +1,9 @@
 import sqlite3
-import pandas as pd
 from pathlib import Path
 
 #the database file tends to appear in scraper folder
 data_folder = Path(__file__).parent.absolute()
 db_path = data_folder / 'groceries.db'
-
-#connection
-connection = sqlite3.connect(db_path)
 
 #creating a table
 sql_create_table = """
@@ -21,12 +17,10 @@ CREATE TABLE IF NOT EXISTS groceries(
     in_stock BOOLEAN
 )
 """
-cursor = connection.cursor()
-cursor.execute(sql_create_table)
-try:
+with sqlite3.connect(db_path) as connection:
+    cursor = connection.cursor()
+    cursor.execute(sql_create_table)
     connection.commit()
-except Exception as e:
-    connection.rollback()
 
 def insert(grocery, store, category, price, url, in_stock):
     sql_insert = """
@@ -37,11 +31,12 @@ def insert(grocery, store, category, price, url, in_stock):
         in_stock = excluded.in_stock;
     """
     try:
-        cursor.execute(sql_insert, (grocery, store, category, price, url, in_stock))
-        connection.commit()
-        print(f"Item: {grocery} successfully updated")
+        with sqlite3.connect(db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(sql_create_table)
+            connection.commit()
     except Exception as e:
         connection.rollback()
-        print("Error at update")
+        print(f"Error at update {e}")
 
 

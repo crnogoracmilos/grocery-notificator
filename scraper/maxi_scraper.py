@@ -1,21 +1,39 @@
 import re
 from bs4 import BeautifulSoup
 import requests
-from data import sqllite
+import time
 from data.sqllite import insert
 
 
 
-def parsing(url):
+def parsing(url, timeout = 10):
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    return soup
+
+    try:
+        response = requests.get(url, headers=headers, timeout=timeout)
+
+        # Proverava da li je status kod 2xx (baca HTTPError za 404, 403, 500...)
+        response.raise_for_status()
+
+        return response.text
+
+    except requests.exceptions.Timeout:
+        print(f"Greška: Isteklo vreme (timeout) prilikom učitavanja stranice: {url}")
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP greška za {url}: {e.response.status_code} - {e.response.reason}")
+    except requests.exceptions.RequestException as e:
+        print(f"Došlo je do mrežne greške: {e}")
+
+    return None
 
 
-def find_the_least_expensive(soup):
+
+def find_the_least_expensive(html_content):
+    if not html_content:
+        return None
+    soup = BeautifulSoup(html_content, 'html.parser')
     prices_html = soup.find('div', class_=re.compile(r'priceCol'))
 
     line = soup.find('ol', class_ = re.compile(r'list'))
@@ -47,9 +65,9 @@ def find_the_least_expensive(soup):
                     price = float(clean_price.replace('.', '').replace(',', '.'))
                     d[store_name] = (price, name, category)
                 else:
-                    print(f"Nije pronađena validna cena za {store_name}")
+                    print(f"No price for {store_name}")
         if not d:
-            print("Pronalazenje cena je neuspesno")
+            print("Price finding failed")
             return None
         d_sorted = sorted(d.items(), key=lambda item: item[1][0])
         best_store, (best_price, best_name, best_category) = d_sorted[0]
@@ -58,7 +76,7 @@ def find_the_least_expensive(soup):
     return None
 
 if "__main__" == __name__:
-    url = 'https://cenoteka.rs/p/krem-ferrero-nutella-400g/'
+    url = 'https://cenoteka.rs/p/maslinovo-ulje-olitalia-extra-virgine-1l/'
     soup = parsing(url)
     result = find_the_least_expensive(soup)
 
