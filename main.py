@@ -1,6 +1,6 @@
 import time
-from crawler.maxi_crawler import get_category_urls
-from scraper.maxi_scraper import parsing, find_the_prices
+from crawler.cenoteka_crawler import get_category_urls
+from scraper.cenoteka_scraper import parsing, find_the_prices
 from data.sqllite import insert
 
 CATEGORIES = [
