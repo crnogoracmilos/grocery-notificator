@@ -1,6 +1,6 @@
 import time
 from crawler.maxi_crawler import get_category_urls
-from scraper.maxi_scraper import parsing, find_the_least_expensive
+from scraper.maxi_scraper import parsing, find_the_prices
 from data.sqllite import insert
 
 CATEGORIES = [
@@ -21,11 +21,12 @@ def main():
     for i, url in enumerate(all_products_urls, 1):
         print(f"[{i}/{len(all_products_urls)}] {url}")
         html = parsing(url)
-        result = find_the_least_expensive(html)
+        result = find_the_prices(html)
 
         if result:
-          best_store, (best_price, best_name, best_category) = result
-          insert(best_name, best_store, best_category, best_price, url, True)
+          print(f"Pronađeno cena za {url}: {result}")
+          for best_store, best_price, best_name, best_category in result:
+            insert(best_name, best_store, best_category, best_price, url, True)
         else:
           print(f"  Skipped (no price found): {url}")
         time.sleep(1)  # be polite to the server

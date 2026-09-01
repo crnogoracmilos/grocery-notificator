@@ -30,11 +30,10 @@ def parsing(url, timeout = 10):
 
 
 
-def find_the_least_expensive(html_content):
+def find_the_prices(html_content):
     if not html_content:
         return None
     soup = BeautifulSoup(html_content, 'html.parser')
-    prices_html = soup.find('div', class_=re.compile(r'priceCol'))
 
     line = soup.find('ol', class_ = re.compile(r'list'))
     if line:
@@ -49,9 +48,12 @@ def find_the_least_expensive(html_content):
         name = 'unknown'
         category = 'unknown'
 
-    if prices_html:
-        row = prices_html.find_all('div', class_=re.compile(r'row'))
-        d = dict()
+    prices_html = soup.find_all('div', class_=re.compile(r'priceCol'))
+    if not prices_html:
+        prices_html = [soup]
+    for col in prices_html:
+        row = col.find_all('div', class_=re.compile(r'row'))
+        units = []
         for prices in row:
             store = prices.find('img', class_=re.compile(r'logo'))
             store_name = store['alt'] if store else 'unknown'
@@ -59,29 +61,25 @@ def find_the_least_expensive(html_content):
             if price_span:
                 price_text = price_span.text.strip()
                 match = re.search(r'[\d.,]+', price_text)
-
                 if match:
                     clean_price = match.group(0)
                     price = float(clean_price.replace('.', '').replace(',', '.'))
-                    d[store_name] = (price, name, category)
+                    units.append((store_name, price, name, category))
                 else:
                     print(f"No price for {store_name}")
-        if not d:
+        if not units:
             print("Price finding failed")
             return None
-        d_sorted = sorted(d.items(), key=lambda item: item[1][0])
-        best_store, (best_price, best_name, best_category) = d_sorted[0]
-        print(f"The best store for buying is: {best_store}, with the price being {best_price} (Name: {best_name})")
-        return d_sorted[0]
+        return units
     return None
 
 if "__main__" == __name__:
     url = 'https://cenoteka.rs/p/maslinovo-ulje-olitalia-extra-virgine-1l/'
     soup = parsing(url)
-    result = find_the_least_expensive(soup)
+    result = find_the_prices(soup)
 
     if result:
-        best_store, (best_price, best_name, best_category) = result
-        insert(best_name, best_store, best_category, best_price, url, True)
+        for best_store, best_price, best_name, best_category in result:
+            insert(best_name, best_store, best_category, best_price, url, True)
     else:
         print("Insertion of the data FAILED")
