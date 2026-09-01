@@ -33,7 +33,7 @@ def insert(grocery, store, category, price, url, in_stock):
     try:
         with sqlite3.connect(db_path) as connection:
             cursor = connection.cursor()
-            cursor.execute(sql_create_table)
+            cursor.execute(sql_insert, (grocery, store, category, price, url, in_stock))
             connection.commit()
     except Exception as e:
         connection.rollback()
