@@ -4,7 +4,7 @@ from typing import Final
 import os
 from dotenv import load_dotenv
 
-TELEGRAM_TOKEN: Final = "8947475366:AAF_G51H8wZvZphiM5NG4CS6wnl76MLEAM8"
+TELEGRAM_TOKEN: Final = f"{load_dotenv("TELEGRAM_TOKEN")}"
 BOT_USERNAME: Final = '@citac_namirnica_bot'
 
 CHAT_ID = "5623598376"
@@ -21,9 +21,17 @@ async def custom_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 #responses
 
-def handle_request(text: str) -> str:
+async def handle_response(text: str) -> str:
     print("The Message has been received successfully")
     return text
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text: str = update.message.text
+    print(f"User ({update.message.chat.id}): {text}")
+    response: str = handle_request(text)
+    print("Bot", response)
+
+
 
 
 if __name__ == "__main__":

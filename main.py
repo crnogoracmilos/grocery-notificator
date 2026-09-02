@@ -3,13 +3,13 @@ from crawler.cenoteka_crawler import get_category_urls
 from scraper.cenoteka_scraper import parsing, find_the_prices
 from data.sqllite import insert
 from processors.process import find_the_categories
-from notifications.telegram_bot import handle_request
+from notifications.telegram_bot import handle_response
 
 
 def main():
     print("The bot has been activated and is reading the messages...")
     while True:
-        text = handle_request()
+        text = handle_response()
         if not text:
             time.sleep(2)
             continue
