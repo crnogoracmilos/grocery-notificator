@@ -41,6 +41,6 @@ def get_category_urls(category_url):
     return list(product_urls)
 
 if __name__ == "__main__":
-    links = get_category_urls("https://cenoteka.rs/jaja/")
+    links = get_category_urls("https://cenoteka.rs/pretraga/?q=majmun")
     print(links)
     print(len(links))
