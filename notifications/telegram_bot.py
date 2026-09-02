@@ -1,16 +1,29 @@
-import requests
-import pandas as pd
-import sqlite3
-from pathlib import Path
-from processors.process import find_lowest
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from typing import Final
+import os
+from dotenv import load_dotenv
 
 TELEGRAM_TOKEN: Final = "8947475366:AAF_G51H8wZvZphiM5NG4CS6wnl76MLEAM8"
 BOT_USERNAME: Final = '@citac_namirnica_bot'
 
 CHAT_ID = "5623598376"
 
-def send_message(text):
+#commands
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Hello! Thanks for usinXg our Bot")
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Hello! Please type something so I can search it for you")
+
+async def custom_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("This is a custom command")
+
+#responses
+
+
+
+"""def send_message(text):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id" : CHAT_ID,
@@ -42,7 +55,8 @@ def get_the_lowest_price_to_notify():
                 message += f"  <a href='{values['url']}'>Link to the grocery</a>\n\n"
             send_message(message)
     except Exception as e:
-        print(f"Error with database: {e}")
+        print(f"Error with database: {e}")"""
 
 if __name__ == "__main__":
-    get_the_lowest_price_to_notify()
+    pass
+    """get_the_lowest_price_to_notify()"""
