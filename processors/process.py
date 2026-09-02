@@ -9,7 +9,6 @@ db_path = current_file.parent.parent / 'data' / 'groceries.db'
 with sqlite3.connect(db_path) as connection:
     data = pd.read_sql("SELECT * FROM groceries", connection)
 
-lowest_price = data.loc[data.groupby('grocery')['price'].idxmin()]
-average_price = data.loc[data.groupby('category')['price'].idxmin()]
-print(lowest_price[['grocery', 'store', 'price']])
-print(average_price[['grocery', 'store', 'price']])
+def find_lowest():
+    lowest_price = data.loc[data.groupby('grocery')['price'].idxmin()]
+    return lowest_price[['grocery', 'store', 'price', 'url']]
