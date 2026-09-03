@@ -7,16 +7,24 @@ db_path = data_folder / 'groceries.db'
 
 #creating a table
 sql_create_table = """
-CREATE TABLE IF NOT EXISTS groceries(
+CREATE TABLE IF NOT EXISTS products(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     grocery TEXT NOT NULL,
     store TEXT,
     category TEXT,
-    price REAL,
     url TEXT,
-    in_stock BOOLEAN,
     UNIQUE(url, store)
-)
+);
+CREATE TABLE IF NOT EXISTS price_history(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER NOT NULL,
+    price REAL,
+    in_stock BOOLEAN,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY(product_id) REFERENCES products(id)
+);
+
 """
 with sqlite3.connect(db_path) as connection:
     cursor = connection.cursor()
