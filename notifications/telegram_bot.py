@@ -1,39 +1,58 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineQueryResultArticle, InputTextMessageContent
+from telegram.ext import filters, CommandHandler, MessageHandler, ContextTypes, ApplicationBuilder, InlineQueryHandler
 from typing import Final
 import os
 from dotenv import load_dotenv
+from uuid import uuid4
 
-TELEGRAM_TOKEN: Final = f"{load_dotenv("TELEGRAM_TOKEN")}"
+load_dotenv()
+TELEGRAM_TOKEN: Final = os.getenv("TELEGRAM_TOKEN")
 BOT_USERNAME: Final = '@citac_namirnica_bot'
 
 CHAT_ID = "5623598376"
 
-#commands
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! Thanks for using our Bot!")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text = "I am a bot, please talk to me!")
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! Please type something so I can search it for you")
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text = update.message.text)
 
-async def custom_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("This is a custom command")
+async def caps(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text_caps = ' '.join(context.args).upper()
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
 
-#responses
+async def inline_caps(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.inline_query.query
+    if not query:
+        print("The query creation was unsuccessful")
+        return
+    results = []
+    results.append(
+        InlineQueryResultArticle(
+            id = str(uuid4()),
+            title = 'Caps',
+            input_message_content = InputTextMessageContent(query.upper())
+        )
+    )
+    await context.bot.answer_inline_query(update.inline_query.id, results)
 
-async def handle_response(text: str) -> str:
-    print("The Message has been received successfully")
-    return text
-
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text: str = update.message.text
-    print(f"User ({update.message.chat.id}): {text}")
-    response: str = handle_request(text)
-    print("Bot", response)
+async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
 
 
+if __name__ == '__main__':
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
+    start_handler = CommandHandler('start', start)
+    echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
+    caps_handler = CommandHandler('caps', caps)
+    inline_caps_handler = InlineQueryHandler(inline_caps)
+    unknown_handler = MessageHandler(filters.COMMAND, unknown)
 
-if __name__ == "__main__":
-    pass
-    """get_the_lowest_price_to_notify()"""
+    application.add_handler(start_handler)
+    application.add_handler(echo_handler)
+    application.add_handler(caps_handler)
+    application.add_handler(inline_caps_handler)
+    application.add_handler(unknown_handler)
+
+    application.run_polling()
