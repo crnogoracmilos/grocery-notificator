@@ -28,21 +28,32 @@ CREATE TABLE IF NOT EXISTS price_history(
 """
 with sqlite3.connect(db_path) as connection:
     cursor = connection.cursor()
-    cursor.execute(sql_create_table)
+    cursor.executescript(sql_create_table)
     connection.commit()
 
 def insert(grocery, store, category, price, url, in_stock):
-    sql_insert = """
-    INSERT INTO groceries (grocery, store, category, price, url, in_stock) 
-    VALUES (?,?,?,?,?,?)
-    ON CONFLICT(url, store) DO UPDATE SET
-        price = excluded.price,
-        in_stock = excluded.in_stock;
-    """
     try:
         with sqlite3.connect(db_path) as connection:
             cursor = connection.cursor()
-            cursor.execute(sql_insert, (grocery, store, category, price, url, in_stock))
+            sql_insert_product = """
+                INSERT OR IGNORE INTO products (grocery, store, category, url)
+                VALUES (?, ?, ?, ?);
+                """
+            cursor.execute(sql_insert_product, (grocery, store, category, url))
+            sql_get_id = """
+                            SELECT id FROM products 
+                            WHERE url = ? AND store = ?;
+                        """
+            cursor.execute(sql_get_id,(url, store))
+            result = cursor.fetchone()
+            if result is None:
+                raise Exception("The ID was not found during the search")
+            product_id = result[0]
+            sql_insert_price = """
+                            INSERT INTO price_history (product_id, price, in_stock)
+                            VALUES (?, ?, ?);
+                        """
+            cursor.execute(sql_insert_price, (product_id, price, in_stock))
             connection.commit()
     except Exception as e:
         connection.rollback()
