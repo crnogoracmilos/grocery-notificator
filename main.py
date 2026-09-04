@@ -14,7 +14,7 @@ def main():
             time.sleep(2)
             continue
         print(f"The message has been received: {text}")"""
-    category_url = find_the_categories('jaja')
+    category_url = find_the_categories('brasno')
     all_products_urls = set()
     urls = get_category_urls(category_url)
     print(f"For {category_url} the software found {len(urls)} products")

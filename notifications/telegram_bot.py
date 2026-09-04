@@ -24,7 +24,7 @@ async def search_products(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for number, result in enumerate(results, start=1):
         grocery, store, category, price, url = result
         product_text = (
-            f"{number}, {grocery}\n"
+            f"{number}. {grocery}\n"
             f"Prodavnica: {store}\n"
             f"Cena: {price:.2f} RSD\n"
             f"Kategorija: {category}\n"
