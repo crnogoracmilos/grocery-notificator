@@ -60,3 +60,42 @@ def insert(grocery, store, category, price, url, in_stock):
         print(f"Error at update {e}")
 
 
+def find_products(search_term: str, limit: int = 5):
+    search_term = search_term.strip()
+
+    if not search_term:
+        return []
+
+    search_pattern = f"%{search_term}%"
+
+    with sqlite3.connect(db_path) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute(
+        """
+            SELECT p.grocery, p.store, p.category, ph.price, p.url
+            FROM products AS p
+            JOIN price_history AS ph
+                ON ph.product_id = p.id
+            WHERE p.grocery LIKE ? AND ph.id = (
+                                            SELECT ph_latest.id
+                                            FROM price_history AS ph_latest
+                                            WHERE ph_latest.product_id = p.id
+                                            ORDER BY ph_latest.timestamp DESC, ph_latest.id DESC
+                                            LIMIT 1
+                                            )
+            AND ph.in_stock = 1
+            ORDER BY ph.price ASC
+            LIMIT ?
+            """,
+            (search_pattern, limit)
+        )
+
+        return cursor.fetchall()
+
+if __name__ == "__main__":
+    results = find_products("jaja", 5)
+
+    for product in results:
+        print(product)
+
