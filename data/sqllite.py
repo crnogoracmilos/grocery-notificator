@@ -66,18 +66,27 @@ def find_products(search_term: str, limit: int = 5):
     if not search_term:
         return []
 
-    search_pattern = f"%{search_term}%"
+    search_words = search_term.split()
+    conditions = " AND ".join(
+        ["p.grocery LIKE ?" for _ in search_words]
+    )
+
+    parameters = [
+        f"%{word}%" for word in search_words
+    ]
+
+    parameters.append(limit)
 
     with sqlite3.connect(db_path) as connection:
         cursor = connection.cursor()
 
-        cursor.execute(
-        """
+        sql_find_products = (
+        f"""
             SELECT p.grocery, p.store, p.category, ph.price, p.url
             FROM products AS p
             JOIN price_history AS ph
                 ON ph.product_id = p.id
-            WHERE p.grocery LIKE ? AND ph.id = (
+            WHERE {conditions} AND ph.id = (
                                             SELECT ph_latest.id
                                             FROM price_history AS ph_latest
                                             WHERE ph_latest.product_id = p.id
@@ -87,14 +96,15 @@ def find_products(search_term: str, limit: int = 5):
             AND ph.in_stock = 1
             ORDER BY ph.price ASC
             LIMIT ?
-            """,
-            (search_pattern, limit)
+            """
         )
+        cursor.execute(sql_find_products, parameters)
+
 
         return cursor.fetchall()
 
 if __name__ == "__main__":
-    results = find_products("jaja", 5)
+    results = find_products("jaja 10kom", 5)
 
     for product in results:
         print(product)
