@@ -1,6 +1,7 @@
 from telegram import Update, InlineQueryResultArticle, InputTextMessageContent
 from telegram.ext import filters, CommandHandler, MessageHandler, ContextTypes, ApplicationBuilder, InlineQueryHandler
 from typing import Final
+from data.sqllite import find_products
 import os
 from dotenv import load_dotenv
 from uuid import uuid4
@@ -12,8 +13,30 @@ BOT_USERNAME: Final = '@citac_namirnica_bot'
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text = "I am a bot, please talk to me!")
 
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text = update.message.text)
+async def search_products(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    text_parsed = text.strip()
+    results = find_products(text_parsed, 5)
+    if not results:
+        await update.message.reply_text("The search was unsuccessful")
+        return
+    response_parts = [f"Results for: {text_parsed}"]
+    for number, result in enumerate(results, start=1):
+        grocery, store, category, price, url = result
+        product_text = (
+            f"{number}, {grocery}\n"
+            f"Prodavnica: {store}\n"
+            f"Cena: {price:.2f} RSD\n"
+            f"Kategorija: {category}\n"
+            f"Link: {url}"
+        )
+        response_parts.append(product_text)
+    responde_message = "\n\n".join(response_parts)
+    await update.message.reply_text(responde_message)
+
+
+
+
 
 async def caps(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text_caps = ' '.join(context.args).upper()
@@ -42,13 +65,13 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
     start_handler = CommandHandler('start', start)
-    echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
+    search_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), search_products)
     caps_handler = CommandHandler('caps', caps)
     inline_caps_handler = InlineQueryHandler(inline_caps)
     unknown_handler = MessageHandler(filters.COMMAND, unknown)
 
     application.add_handler(start_handler)
-    application.add_handler(echo_handler)
+    application.add_handler(search_handler)
     application.add_handler(caps_handler)
     application.add_handler(inline_caps_handler)
     application.add_handler(unknown_handler)
