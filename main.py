@@ -3,7 +3,7 @@ from crawler.cenoteka_crawler import get_category_urls
 from scraper.cenoteka_scraper import parsing, find_the_prices
 from data.sqllite import insert
 from processors.process import find_the_categories
-from notifications.telegram_bot import handle_response
+
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
             time.sleep(2)
             continue
         print(f"The message has been received: {text}")"""
-    category_url = find_the_categories('https://cenoteka.rs/jaja/')
+    category_url = find_the_categories('jaja')
     all_products_urls = set()
     urls = get_category_urls(category_url)
     print(f"For {category_url} the software found {len(urls)} products")

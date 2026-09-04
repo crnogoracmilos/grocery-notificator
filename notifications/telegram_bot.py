@@ -9,8 +9,6 @@ load_dotenv()
 TELEGRAM_TOKEN: Final = os.getenv("TELEGRAM_TOKEN")
 BOT_USERNAME: Final = '@citac_namirnica_bot'
 
-CHAT_ID = "5623598376"
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text = "I am a bot, please talk to me!")
 
