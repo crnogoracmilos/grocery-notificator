@@ -7,7 +7,7 @@ current_file = Path(__file__).resolve()
 db_path = current_file.parent.parent / 'data' / 'groceries.db'
 
 with sqlite3.connect(db_path) as connection:
-    data = pd.read_sql("SELECT * FROM products", connection)
+    data = pd.read_sql("SELECT * FROM price_history", connection)
 
 def find_lowest():
     lowest_price = data.loc[data.groupby('grocery')['price'].idxmin()]
