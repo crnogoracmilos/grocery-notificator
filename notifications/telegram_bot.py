@@ -34,10 +34,6 @@ async def search_products(update: Update, context: ContextTypes.DEFAULT_TYPE):
     responde_message = "\n\n".join(response_parts)
     await update.message.reply_text(responde_message)
 
-
-
-
-
 async def caps(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text_caps = ' '.join(context.args).upper()
     await context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
