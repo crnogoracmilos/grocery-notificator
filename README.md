@@ -1,4 +1,3 @@
-# grocery-notificator
 # Grocery Notificator
 
 Grocery Notificator is a Python application for searching and comparing grocery prices from Serbian stores through a Telegram bot.
