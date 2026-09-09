@@ -5,7 +5,6 @@ from data.sqllite import insert
 from processors.process import find_the_categories
 
 
-
 def main():
     print("The bot has been activated and is reading the messages...")
     """while True:
