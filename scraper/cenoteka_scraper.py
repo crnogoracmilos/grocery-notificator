@@ -53,15 +53,15 @@ def find_the_prices(html_content):
         prices_html = [soup]
     units = []
     for col in prices_html:
-        row = col.find_all('div', class_=re.compile(r'row'))
+        row = col.find_all(['div', 'a'], class_=re.compile(r'__row'))
 
-        for prices in row:
-            store = prices.find('img', class_=re.compile(r'logo'))
-            store_name = store['alt'] if store else 'unknown'
-            price_span = prices.find('span', class_=re.compile(r'price'))
+        for prices_row in row:
+            store = prices_row.find('img', class_=re.compile(r'logo'))
+            store_name = store.get('alt','unknown') if store else 'unknown'
+            price_span = prices_row.find('span', class_=re.compile(r'price'))
             if price_span:
                 price_text = price_span.text.strip()
-                match = re.search(r'[\d.,]+', price_text)
+                match = re.search(r'\d{1,3}(?:\.\d{3})*(?:,\d{2})?', price_text)
                 if match:
                     clean_price = match.group(0)
                     price = float(clean_price.replace('.', '').replace(',', '.'))
