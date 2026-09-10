@@ -9,12 +9,14 @@ from urllib.parse import urljoin
 
 def get_category_urls(category_url):
     product_urls = set()
+    visited_pages = set()
     current_url = category_url
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
 
-    while current_url:
+    while current_url and current_url not in visited_pages:
+        visited_pages.add(current_url)
         try:
-            response = requests.get(current_url, headers=headers)
+            response = requests.get(current_url, headers=headers, timeout=15)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(f"Error at {current_url}: {e}")
@@ -35,9 +37,10 @@ def get_category_urls(category_url):
             full_url = urljoin("https://cenoteka.rs", link['href'])
             if full_url not in excluded:
                 product_urls.add(full_url)
-        next_button = soup.find('a', rel='next') or soup.find('a', class_=re.compile(r'next', re.I))
+        next_button = soup.select_one('nav[aria-label="Paginacija" a[aria-label="Sledeća strana"')
         current_url = urljoin("https://cenoteka.rs", next_button['href']) if next_button and next_button.get(
             'href') else None
+        time.sleep(0.5)
     return list(product_urls)
 
 if __name__ == "__main__":
