@@ -73,13 +73,3 @@ def find_the_prices(html_content):
     return units
 
 
-if "__main__" == __name__:
-    url = 'https://cenoteka.rs/p/maslinovo-ulje-olitalia-extra-virgine-1l/'
-    soup = parsing(url)
-    result = find_the_prices(soup)
-
-    if result:
-        for best_store, best_price, best_name, best_category in result:
-            insert(best_name, best_store, best_category, best_price, url, True)
-    else:
-        print("Insertion of the data FAILED")
