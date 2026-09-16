@@ -37,7 +37,7 @@ def get_category_urls(category_url):
             full_url = urljoin("https://cenoteka.rs", link['href'])
             if full_url not in excluded:
                 product_urls.add(full_url)
-        next_button = soup.select_one('nav[aria-label="Paginacija" a[aria-label="Sledeća strana"')
+        next_button = soup.select_one('nav[aria-label="Paginacija"] a[aria-label="Sledeća strana"]')
         current_url = urljoin("https://cenoteka.rs", next_button['href']) if next_button and next_button.get(
             'href') else None
         time.sleep(0.5)

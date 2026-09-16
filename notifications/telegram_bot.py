@@ -15,7 +15,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def search_products(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
-    text_parsed = text.strip()
+    text_parsed = text.strip().casefold()
     results = find_products(text_parsed, 5)
     if not results:
         await update.message.reply_text("The search was unsuccessful")
