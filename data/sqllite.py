@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from core.text import normalize_search
 
 #the database file tends to appear in scraper folder
 data_folder = Path(__file__).parent.absolute()
@@ -10,6 +11,7 @@ sql_create_table = """
 CREATE TABLE IF NOT EXISTS products(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     grocery TEXT NOT NULL,
+    grocery_search TEXT NOT NULL,
     store TEXT,
     category TEXT,
     url TEXT,
@@ -32,14 +34,15 @@ with sqlite3.connect(db_path) as connection:
     connection.commit()
 
 def insert(grocery, store, category, price, url, in_stock):
+    grocery_search = normalize_search(grocery)
     try:
         with sqlite3.connect(db_path) as connection:
             cursor = connection.cursor()
             sql_insert_product = """
-                INSERT OR IGNORE INTO products (grocery, store, category, url)
-                VALUES (?, ?, ?, ?);
+                INSERT OR IGNORE INTO products (grocery, grocery_search, store, category, url)
+                VALUES (?, ?, ?, ?, ?);
                 """
-            cursor.execute(sql_insert_product, (grocery, store, category, url))
+            cursor.execute(sql_insert_product, (grocery, grocery_search, store, category, url))
             sql_get_id = """
                             SELECT id FROM products 
                             WHERE url = ? AND store = ?;
@@ -61,14 +64,14 @@ def insert(grocery, store, category, price, url, in_stock):
 
 
 def find_products(search_term: str, limit: int = 5):
-    search_term = search_term.strip()
+    search_term = normalize_search(search_term)
 
     if not search_term:
         return []
 
     search_words = search_term.split()
     conditions = " AND ".join(
-        ["p.grocery LIKE ?" for _ in search_words]
+        ["p.grocery_search LIKE ?" for _ in search_words]
     )
 
     parameters = [

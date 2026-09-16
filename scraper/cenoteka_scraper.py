@@ -1,10 +1,6 @@
 import re
 from bs4 import BeautifulSoup
 import requests
-import time
-from data.sqllite import insert
-
-
 
 def parsing(url, timeout = 10):
     headers = {
@@ -27,7 +23,19 @@ def parsing(url, timeout = 10):
 
     return None
 
+def parse_price(price_text):
+    if not price_text:
+        return None
+    match = re.search( r'(?<!\d)(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{2}))?(?!\d)',
+        price_text,)
 
+    if not match:
+        return None
+
+    whole_part = match.group(1).replace('.', '')
+    decimal_part = match.group(2) or '00'
+
+    return float(f"{whole_part}.{decimal_part}")
 
 def find_the_prices(html_content):
     if not html_content:
@@ -58,18 +66,23 @@ def find_the_prices(html_content):
             store = prices_row.find('img', class_=re.compile(r'logo'))
             store_name = store.get('alt','unknown') if store else 'unknown'
             price_span = prices_row.find('span', class_=re.compile(r'price'))
-            if price_span:
-                price_text = price_span.text.strip()
-                match = re.search(r'\d{1,3}(?:\.\d{3})*(?:,\d{2})?', price_text)
-                if match:
-                    clean_price = match.group(0)
-                    price = float(clean_price.replace('.', '').replace(',', '.'))
-                    units.append((store_name.casefold(), price, name.casefold(), category.casefold()))
-                else:
-                    print(f"No price for {store_name}")
+            if not price_span:
+                continue
+            price_text = price_span.get_text(strip=True)
+            price = parse_price(price_text)
+
+            if price is None:
+                print(f"No valid price for {store_name}: {price_text}")
+                continue
+            units.append((
+                store_name,
+                price,
+                name,
+                category,
+            ))
     if not units:
-            print("Price finding failed")
-            return None
+        print("Price finding failed")
+        return None
     return units
 
 
