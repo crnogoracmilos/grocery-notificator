@@ -14,7 +14,6 @@ def parsing(url, timeout = 10):
     try:
         response = requests.get(url, headers=headers, timeout=timeout)
 
-        # Proverava da li je status kod 2xx (baca HTTPError za 404, 403, 500...)
         response.raise_for_status()
 
         return response.text
