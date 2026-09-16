@@ -12,10 +12,11 @@ CREATE TABLE IF NOT EXISTS products(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     grocery TEXT NOT NULL,
     grocery_search TEXT NOT NULL,
-    store TEXT,
+    store TEXT NOT NULL,
+    store_search TEXT NOT NULL,
     category TEXT,
-    url TEXT,
-    UNIQUE(url, store)
+    url TEXT NOT NULL,
+    UNIQUE(url, store_search)
 );
 CREATE TABLE IF NOT EXISTS price_history(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,19 +36,20 @@ with sqlite3.connect(db_path) as connection:
 
 def insert(grocery, store, category, price, url, in_stock):
     grocery_search = normalize_search(grocery)
+    store_search = normalize_search(store)
     try:
         with sqlite3.connect(db_path) as connection:
             cursor = connection.cursor()
             sql_insert_product = """
-                INSERT OR IGNORE INTO products (grocery, grocery_search, store, category, url)
-                VALUES (?, ?, ?, ?, ?);
+                INSERT OR IGNORE INTO products (grocery, grocery_search, store, store_search, category, url)
+                VALUES (?, ?, ?, ?, ?, ?);
                 """
-            cursor.execute(sql_insert_product, (grocery, grocery_search, store, category, url))
+            cursor.execute(sql_insert_product, (grocery, grocery_search, store, store_search, category, url))
             sql_get_id = """
                             SELECT id FROM products 
-                            WHERE url = ? AND store = ?;
+                            WHERE url = ? AND store_search = ?;
                         """
-            cursor.execute(sql_get_id,(url, store))
+            cursor.execute(sql_get_id,(url, store_search))
             result = cursor.fetchone()
             if result is None:
                 raise Exception("The ID was not found during the search")
@@ -59,8 +61,8 @@ def insert(grocery, store, category, price, url, in_stock):
             cursor.execute(sql_insert_price, (product_id, price, in_stock))
             connection.commit()
     except Exception as e:
-        connection.rollback()
         print(f"Error at update {e}")
+        raise
 
 
 def find_products(search_term: str, limit: int = 5):
