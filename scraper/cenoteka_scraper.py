@@ -66,7 +66,7 @@ def find_the_prices(html_content):
                     price = float(clean_price.replace('.', '').replace(',', '.'))
                     units.append((store_name.casefold(), price, name.casefold(), category.casefold()))
                 else:
-                    print(f"No price for {store_name.s}")
+                    print(f"No price for {store_name}")
     if not units:
             print("Price finding failed")
             return None
