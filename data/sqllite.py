@@ -66,6 +66,14 @@ def insert(grocery, store, category, price, url, in_stock):
         print(f"Error at update {e}")
         raise
 
+def escape_like(text: str) -> str:
+    return (
+        text
+        .replace("\\", "\\\\")
+        .replace("%", "\\%")
+        .replace("_", "\\_")
+    )
+
 
 def find_products(search_term: str, limit: int = 5):
     search_term = normalize_search(search_term)
@@ -75,11 +83,11 @@ def find_products(search_term: str, limit: int = 5):
 
     search_words = search_term.split()
     conditions = " AND ".join(
-        ["p.grocery_search LIKE ?" for _ in search_words]
+        ["p.grocery_search LIKE ? ESCAPE '\\'" for _ in search_words]
     )
 
     parameters = [
-        f"%{word}%" for word in search_words
+        f"%{escape_like(word)}%" for word in search_words
     ]
 
     parameters.append(limit)
