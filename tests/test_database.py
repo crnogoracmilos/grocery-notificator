@@ -69,3 +69,35 @@ def test_search_is_case_insensitive_for_serbian_letters(test_db):
 
         assert uppercase_results == lowercase_results
         assert len(lowercase_results) == 1
+
+
+def test_store_case_does_not_create_duplicate(test_db):
+    database.insert(
+        "Mleko",
+        "Maxi",
+        "Mleko",
+        100,
+        "https://example.test/mleko",
+        True,
+    )
+
+    database.insert(
+        "Mleko",
+        "maxi",
+        "Mleko",
+        110,
+        "https://example.test/mleko",
+        True,
+    )
+
+    with sqlite3.connect(test_db) as connection:
+        product_count = connection.execute(
+            "SELECT COUNT(*) FROM products"
+        ).fetchone()[0]
+
+        price_count = connection.execute(
+            "SELECT COUNT(*) FROM price_history"
+        ).fetchone()[0]
+
+    assert product_count == 1
+    assert price_count == 2
