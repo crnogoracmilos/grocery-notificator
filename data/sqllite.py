@@ -28,8 +28,14 @@ CREATE TABLE IF NOT EXISTS price_history(
     
     FOREIGN KEY(product_id) REFERENCES products(id)
 );
-
+CREATE INDEX IF NOT EXISTS idx_price_history_product_latest
+    ON price_history (
+        product_id,
+        timestamp DESC,
+        id DESC
+);
 """
+
 
 def initial_database():
     with closing(sqlite3.connect(db_path)) as connection:
@@ -44,9 +50,29 @@ def insert(grocery, store, category, price, url, in_stock):
             with connection:
                 cursor = connection.cursor()
                 sql_insert_product = """
-                    INSERT OR IGNORE INTO products (grocery, grocery_search, store, store_search, category, url)
-                    VALUES (?, ?, ?, ?, ?, ?);
-                    """
+                INSERT INTO products (grocery, grocery_search, store, store_search, category, url)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(url, store_search)
+                DO UPDATE SET
+                grocery = CASE
+                    WHEN excluded.grocery_search NOT IN ('', 'unknown')
+                    THEN excluded.grocery
+                    ELSE products.grocery
+                    END,
+
+                grocery_search = CASE
+                    WHEN excluded.grocery_search NOT IN ('', 'unknown')
+                    THEN excluded.grocery_search
+                    ELSE products.grocery_search
+                END,
+
+                category = CASE
+                    WHEN excluded.category IS NOT NULL
+                     AND lower(trim(excluded.category)) NOT IN ('', 'unknown')
+                    THEN excluded.category
+                    ELSE products.category
+                END;
+            """
                 cursor.execute(sql_insert_product, (grocery, grocery_search, store, store_search, category, url))
                 sql_get_id = """
                                 SELECT id FROM products 
@@ -58,9 +84,9 @@ def insert(grocery, store, category, price, url, in_stock):
                     raise Exception("The ID was not found during the search")
                 product_id = result[0]
                 sql_insert_price = """
-                              INSERT INTO price_history (product_id, price, in_stock)
-                              VALUES (?, ?, ?);
-                          """
+                            INSERT INTO price_history (product_id, price, in_stock)
+                            VALUES (?, ?, ?);
+                        """
                 cursor.execute(sql_insert_price, (product_id, price, in_stock))
     except Exception as e:
         print(f"Error at update {e}")
@@ -92,7 +118,7 @@ def find_products(search_term: str, limit: int = 5):
 
     parameters.append(limit)
 
-    with sqlite3.connect(db_path) as connection:
+    with closing(sqlite3.connect(db_path)) as connection:
         cursor = connection.cursor()
 
         sql_find_products = (
@@ -114,11 +140,10 @@ def find_products(search_term: str, limit: int = 5):
             """
         )
         cursor.execute(sql_find_products, parameters)
-
-
         return cursor.fetchall()
 
 if __name__ == "__main__":
+    initial_database()
     results = find_products("jaja 10kom", 5)
 
     for product in results:
