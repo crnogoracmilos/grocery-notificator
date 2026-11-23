@@ -1,6 +1,6 @@
 import time
 from crawler.cenoteka_crawler import get_category_urls
-from scraper.cenoteka_scraper import parsing, find_the_prices
+from scraper.cenoteka_scraper import item_getter, find_the_prices
 from data.sqllite import insert
 from processors.process import find_the_categories
 
@@ -22,7 +22,7 @@ def main():
 
     for i, url in enumerate(all_products_urls, 1):
         print(f"[{i}/{len(all_products_urls)}] {url}")
-        html = parsing(url)
+        html = item_getter(url)
         result = find_the_prices(html)
 
         if result:
